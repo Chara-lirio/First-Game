@@ -2,26 +2,52 @@ import random
 import json
 import os
 
-# Archivo donde se guardarán las estadísticas
 ARCHIVO_ESTADISTICAS = "estadisticas.json"
 
-# Estadísticas (se cargarán desde el archivo al iniciar)
 estadisticas = {
     "partidas_jugadas": 0,
     "intentos_totales": 0,
-    "mejor_puntaje": None
+    "mejor_puntaje": {
+        "facil": None,
+        "medio": None,
+        "dificil": None
+    }
 }
+
+def dificultad_a_texto(nivel):
+    return {
+        "1": "facil",
+        "2": "medio",
+        "3": "dificil"
+    }.get(nivel, "medio")
 
 def cargar_estadisticas():
     if os.path.exists(ARCHIVO_ESTADISTICAS):
         with open(ARCHIVO_ESTADISTICAS, "r") as f:
             try:
                 datos = json.load(f)
+
+                # Manejar archivo antiguo donde mejor_puntaje es un int
+                if isinstance(datos.get("mejor_puntaje"), int):
+                    mejor = datos["mejor_puntaje"]
+                    datos["mejor_puntaje"] = {
+                        "facil": None,
+                        "medio": mejor,
+                        "dificil": None
+                    }
+
                 estadisticas.update(datos)
+
+                # Asegurar que tiene las tres claves
+                for clave in ["facil", "medio", "dificil"]:
+                    if clave not in estadisticas["mejor_puntaje"]:
+                        estadisticas["mejor_puntaje"][clave] = None
+
             except json.JSONDecodeError:
-                print("⚠️ Archivo de estadísticas dañado. Se reiniciarán.")
+                print("⚠️ Archivo dañado. Se reiniciarán estadísticas.")
     else:
         guardar_estadisticas()
+
 
 def guardar_estadisticas():
     with open(ARCHIVO_ESTADISTICAS, "w") as f:
@@ -31,9 +57,13 @@ def mostrar_estadisticas():
     print("\n📊 ESTADÍSTICAS:")
     print(f"Partidas jugadas: {estadisticas['partidas_jugadas']}")
     print(f"Intentos totales: {estadisticas['intentos_totales']}")
-    print(f"Mejor puntaje: {estadisticas['mejor_puntaje']}")
+    print("🏆 Mejor puntaje por dificultad:")
+    for nivel, puntaje in estadisticas["mejor_puntaje"].items():
+        print(f"  - {nivel.capitalize()}: {puntaje if puntaje is not None else 'Ninguno'}")
 
 def jugar(dificultad):
+    nombre_dificultad = dificultad_a_texto(dificultad)
+
     if dificultad == "1":
         limite = 10
     elif dificultad == "2":
@@ -41,12 +71,12 @@ def jugar(dificultad):
     elif dificultad == "3":
         limite = 1000
     else:
-        print("Dificultad inválida. Se usará nivel medio (1-100).")
+        print("Dificultad inválida. Se usará medio (1-100).")
         limite = 100
 
     numero_secreto = random.randint(1, limite)
     intentos = 0
-    print(f"\nAdivina el número entre 1 y {limite}.")
+    print(f"\n🎮 Adivina el número entre 1 y {limite}.")
 
     while True:
         try:
@@ -62,16 +92,13 @@ def jugar(dificultad):
         except ValueError:
             print("⚠️ Ingresa un número válido.")
 
-    # Actualizar estadísticas
     estadisticas["partidas_jugadas"] += 1
     estadisticas["intentos_totales"] += intentos
 
-    if (
-        estadisticas["mejor_puntaje"] is None
-        or intentos < estadisticas["mejor_puntaje"]
-    ):
-        estadisticas["mejor_puntaje"] = intentos
-        print("🏆 ¡Nuevo mejor puntaje!")
+    puntaje_actual = estadisticas["mejor_puntaje"][nombre_dificultad]
+    if puntaje_actual is None or intentos < puntaje_actual:
+        estadisticas["mejor_puntaje"][nombre_dificultad] = intentos
+        print("🏆 ¡Nuevo mejor puntaje para dificultad", nombre_dificultad.capitalize() + "!")
 
     guardar_estadisticas()
     mostrar_estadisticas()
