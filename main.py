@@ -1,9 +1,19 @@
 import random
 
-def jugar():
-    numero_secreto = random.randint(1, 100)
+def jugar(dificultad):
+    if dificultad == "1":
+        limite = 10
+    elif dificultad == "2":
+        limite = 100
+    elif dificultad == "3":
+        limite = 1000
+    else:
+        print("Dificultad inválida. Usando dificultad media (1-100).")
+        limite = 100
+
+    numero_secreto = random.randint(1, limite)
     intentos = 0
-    print("\nHe pensado un número entre 1 y 100. ¿Puedes adivinar cuál es?")
+    print(f"\nAdivina el número entre 1 y {limite}.")
 
     while True:
         try:
@@ -14,10 +24,18 @@ def jugar():
             elif adivinanza > numero_secreto:
                 print("Demasiado alto.")
             else:
-                print(f"🎉 ¡Correcto! Adivinaste el número en {intentos} intentos.")
+                print(f"🎉 ¡Correcto! Adivinaste en {intentos} intentos.")
                 break
         except ValueError:
-            print("⚠️ Por favor, introduce un número válido.")
+            print("⚠️ Ingresa un número válido.")
+
+def elegir_dificultad():
+    print("\nSelecciona dificultad:")
+    print("1. Fácil (1-10)")
+    print("2. Medio (1-100)")
+    print("3. Difícil (1-1000)")
+    dificultad = input("Tu elección: ")
+    return dificultad
 
 def mostrar_menu():
     while True:
@@ -27,7 +45,8 @@ def mostrar_menu():
         opcion = input("Selecciona una opción (1 o 2): ")
 
         if opcion == "1":
-            jugar()
+            dificultad = elegir_dificultad()
+            jugar(dificultad)
         elif opcion == "2":
             print("¡Gracias por jugar! 👋")
             break
