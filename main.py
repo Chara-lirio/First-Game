@@ -1,6 +1,13 @@
 import random
 
+# Variables de estadísticas globales
+partidas_jugadas = 0
+intentos_totales = 0
+mejor_puntaje = None
+
 def jugar(dificultad):
+    global partidas_jugadas, intentos_totales, mejor_puntaje
+
     if dificultad == "1":
         limite = 10
     elif dificultad == "2":
@@ -29,13 +36,28 @@ def jugar(dificultad):
         except ValueError:
             print("⚠️ Ingresa un número válido.")
 
+    # Actualizar estadísticas
+    partidas_jugadas += 1
+    intentos_totales += intentos
+
+    if mejor_puntaje is None or intentos < mejor_puntaje:
+        mejor_puntaje = intentos
+        print("🏆 ¡Nuevo mejor puntaje!")
+
+    mostrar_estadisticas()
+
+def mostrar_estadisticas():
+    print("\n📊 ESTADÍSTICAS:")
+    print(f"Partidas jugadas: {partidas_jugadas}")
+    print(f"Intentos totales: {intentos_totales}")
+    print(f"Mejor puntaje (menos intentos): {mejor_puntaje}")
+
 def elegir_dificultad():
     print("\nSelecciona dificultad:")
     print("1. Fácil (1-10)")
     print("2. Medio (1-100)")
     print("3. Difícil (1-1000)")
-    dificultad = input("Tu elección: ")
-    return dificultad
+    return input("Tu elección: ")
 
 def mostrar_menu():
     while True:
